@@ -1,6 +1,8 @@
 use rand::Rng;
 use std::{array, io};
 
+const BOARD_SIZE: usize = 3;
+
 fn main() {
     let available_characters = ['x', 'o'];
 
@@ -11,23 +13,13 @@ fn main() {
     );
 
     let mut possible_choices: Vec<u32> = (1..=9).collect();
-
     // Get user and computer character choices
-    let (user_char, computer_char) = get_user_and_computer_character_choices(available_characters);
-
+    let (user_char, computer_char) = get_character_choices(available_characters);
     // Generate board options
-    let mut board: [[char; 3]; 3] = generate_board();
-    println!("\n");
+    let mut board: [[char; BOARD_SIZE]; BOARD_SIZE] = generate_board();
 
     loop {
-        for row in board.iter() {
-            let display_row = row
-                .iter()
-                .map(|c| c.to_string())
-                .collect::<Vec<_>>()
-                .join(" | ");
-            println!(" {display_row}\n-----------");
-        }
+        print_board(&mut board);
 
         // Get the user number choice
         let user_number = get_user_number_choice(&mut possible_choices);
@@ -44,7 +36,7 @@ fn main() {
     }
 }
 
-fn get_user_and_computer_character_choices(available_characters: [char; 2]) -> (char, char) {
+fn get_character_choices(available_characters: [char; 2]) -> (char, char) {
     loop {
         let mut input = String::new();
         io::stdin()
@@ -77,7 +69,7 @@ fn get_user_and_computer_character_choices(available_characters: [char; 2]) -> (
     }
 }
 
-fn generate_board() -> [[char; 3]; 3] {
+fn generate_board() -> [[char; BOARD_SIZE]; BOARD_SIZE] {
     array::from_fn(|row| {
         array::from_fn(|col| {
             let num = row * 3 + col + 1;
@@ -109,7 +101,7 @@ fn get_user_number_choice(possible_choices: &mut Vec<u32>) -> u32 {
     }
 }
 
-fn update_board(char_to_use: char, board_index: u32, board: &mut [[char; 3]; 3]) {
+fn update_board(char_to_use: char, board_index: u32, board: &mut [[char; BOARD_SIZE]; BOARD_SIZE]) {
     let index = board_index - 1;
     let row = (index / 3) as usize;
     let col = (index % 3) as usize;
@@ -119,4 +111,22 @@ fn update_board(char_to_use: char, board_index: u32, board: &mut [[char; 3]; 3])
 fn get_computer_choice(possible_choices: &mut Vec<u32>) -> u32 {
     let index = rand::thread_rng().gen_range(1..possible_choices.len());
     return possible_choices.swap_remove(index);
+}
+
+fn print_board(board: &mut [[char; BOARD_SIZE]; BOARD_SIZE]) {
+    println!("\nCurrent Board:");
+
+    for (i, row) in board.iter().enumerate() {
+        let row_str = row
+            .iter()
+            .map(|c| format!(" {:^3} ", c))
+            .collect::<Vec<_>>()
+            .join("|");
+
+        println!("{}", row_str);
+
+        if i < BOARD_SIZE - 1 {
+            println!("{}", ["-----"; BOARD_SIZE].join("+"));
+        }
+    }
 }
