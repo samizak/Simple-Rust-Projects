@@ -2,6 +2,7 @@ use rand::Rng;
 use std::{array, io};
 
 const BOARD_SIZE: usize = 3;
+type Board = [[char; BOARD_SIZE]; BOARD_SIZE];
 
 fn main() {
     let available_characters = ['x', 'o'];
@@ -13,25 +14,20 @@ fn main() {
     );
 
     let mut possible_choices: Vec<u32> = (1..=9).collect();
-    // Get user and computer character choices
     let (user_char, computer_char) = get_character_choices(available_characters);
-    // Generate board options
-    let mut board: [[char; BOARD_SIZE]; BOARD_SIZE] = generate_board();
+    let mut board: Board = generate_board();
 
     loop {
         print_board(&mut board);
 
-        // Get the user number choice
-        let user_number = get_user_number_choice(&mut possible_choices);
-        println!("You chose: {}", user_number);
+        let user_choice = get_user_choice(&mut possible_choices);
+        println!("You chose: {}", user_choice);
 
-        // Update board with player's
-        update_board(user_char, user_number, &mut board);
+        update_board(user_char, user_choice, &mut board);
 
         let ai_number: u32 = get_computer_choice(&mut possible_choices);
         println!("Computer chose: {ai_number}");
 
-        // Update board with computer's
         update_board(computer_char, ai_number, &mut board);
     }
 }
@@ -69,7 +65,7 @@ fn get_character_choices(available_characters: [char; 2]) -> (char, char) {
     }
 }
 
-fn generate_board() -> [[char; BOARD_SIZE]; BOARD_SIZE] {
+fn generate_board() -> Board {
     array::from_fn(|row| {
         array::from_fn(|col| {
             let num = row * 3 + col + 1;
@@ -78,34 +74,25 @@ fn generate_board() -> [[char; BOARD_SIZE]; BOARD_SIZE] {
     })
 }
 
-fn get_user_number_choice(possible_choices: &mut Vec<u32>) -> u32 {
+fn get_user_choice(possible_choices: &mut Vec<u32>) -> u32 {
     loop {
-        println!("Choose a number between 1-9");
-        let mut user_choice = String::new();
+        println!("Available positions: {:?}", possible_choices);
+        println!("Choose a position (1-9): ");
 
-        io::stdin()
-            .read_line(&mut user_choice)
-            .expect("Failed to read");
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Failed to read");
 
-        match user_choice.trim().parse::<u32>() {
-            Ok(num) => {
-                if possible_choices.contains(&num) {
-                    possible_choices.retain(|&x| x != num);
+        match input.trim().parse() {
+            Ok(num) if possible_choices.contains(&num) => {
+                if let Some(pos) = possible_choices.iter().position(|&x| x == num) {
+                    possible_choices.swap_remove(pos);
                     return num;
-                } else {
-                    println!("Enter a valid number between 1 and 9 that wasn't already used!");
                 }
             }
-            Err(_) => println!("'{user_choice}' is not a valid number!"),
+            Ok(_) => println!("Position already taken or invalid!"),
+            Err(_) => println!("Please enter a valid number!"),
         }
     }
-}
-
-fn update_board(char_to_use: char, board_index: u32, board: &mut [[char; BOARD_SIZE]; BOARD_SIZE]) {
-    let index = board_index - 1;
-    let row = (index / 3) as usize;
-    let col = (index % 3) as usize;
-    board[row][col] = char_to_use;
 }
 
 fn get_computer_choice(possible_choices: &mut Vec<u32>) -> u32 {
@@ -113,7 +100,14 @@ fn get_computer_choice(possible_choices: &mut Vec<u32>) -> u32 {
     return possible_choices.swap_remove(index);
 }
 
-fn print_board(board: &mut [[char; BOARD_SIZE]; BOARD_SIZE]) {
+fn update_board(character: char, position: u32, board: &mut Board) {
+    let index = position - 1;
+    let row = (index / 3) as usize;
+    let col = (index % 3) as usize;
+    board[row][col] = character;
+}
+
+fn print_board(board: &mut Board) {
     println!("\nCurrent Board:");
 
     for (i, row) in board.iter().enumerate() {
