@@ -6,46 +6,19 @@ fn main() {
     let available_characters = ['x', 'o'];
 
     println!("Welcome to tic-tac-toe!");
-    println!("Choose between 'x' and 'o':");
-
-    let mut user_char = ' ';
-    let mut computer_char = ' ';
+    println!(
+        "Please choose between {} or {}: ",
+        available_characters[0], available_characters[1]
+    );
 
     let mut possible_choices: Vec<u32> = (1..=9).collect();
 
-    loop {
-        let mut user_character = String::new();
+    // Get user and computer character choices
+    let (user_char, computer_char) = get_user_and_computer_character_choices(available_characters);
 
-        io::stdin()
-            .read_line(&mut user_character)
-            .expect("Failed to read line");
+    println!("\n");
 
-        let user_character = user_character.trim();
-
-        if user_character.len() == 1 {
-            if let Some(c) = user_character.chars().next() {
-                if available_characters.contains(&c) {
-                    user_char = c;
-                    println!("You chose '{c}'");
-
-                    if c == 'x' {
-                        computer_char = 'o';
-                    } else {
-                        computer_char = 'x';
-                    }
-
-                    break;
-                } else {
-                    println!("'{c}' is not valid. Choose 'x' or 'o'!")
-                }
-            }
-        } else {
-            println!("Please enter exactly one character!");
-        }
-    }
-
-    println!("");
-
+    // Generate board options
     let mut counter: u32 = 1;
     for row in board.iter_mut() {
         for cell in row.iter_mut() {
@@ -118,5 +91,38 @@ fn main() {
         board[row][col] = computer_char;
 
         println!("{:?}", possible_choices);
+    }
+}
+
+fn get_user_and_computer_character_choices(available_characters: [char; 2]) -> (char, char) {
+    loop {
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        let input = input.trim();
+
+        let user_char: char = match input.len() {
+            1 => input.chars().next().unwrap(),
+            _ => {
+                println!("Please enter exactly one character!");
+                continue;
+            }
+        };
+
+        if available_characters.contains(&user_char) {
+            let computer_char = available_characters
+                .iter()
+                .find(|&&c| c != user_char)
+                .unwrap();
+
+            println!("You chose '{user_char}'");
+            return (user_char, *computer_char);
+        }
+
+        println!(
+            "'{}' is not valid. Choose '{}' or '{}'!",
+            user_char, available_characters[0], available_characters[1]
+        );
     }
 }
