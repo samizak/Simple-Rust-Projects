@@ -36,15 +36,7 @@ fn main() {
         // Update board with player's
         update_board(user_char, user_number, &mut board);
 
-        let mut ai_number = rand::thread_rng().gen_range(1..=9);
-        loop {
-            if possible_choices.contains(&ai_number) {
-                break;
-            }
-            ai_number = rand::thread_rng().gen_range(1..=9);
-            possible_choices.retain(|&x| x != ai_number);
-        }
-
+        let ai_number: u32 = get_computer_choice(&mut possible_choices);
         println!("Computer chose: {ai_number}");
 
         // Update board with computer's
@@ -122,6 +114,9 @@ fn update_board(char_to_use: char, board_index: u32, board: &mut [[char; 3]; 3])
     let row = (index / 3) as usize;
     let col = (index % 3) as usize;
     board[row][col] = char_to_use;
+}
 
-    // println!("{:?}", possible_choices);
+fn get_computer_choice(possible_choices: &mut Vec<u32>) -> u32 {
+    let index = rand::thread_rng().gen_range(1..possible_choices.len());
+    return possible_choices.swap_remove(index);
 }
