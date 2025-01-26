@@ -1,0 +1,5 @@
+# Ignore the root `target/` directory
+/target/
+
+# Ignore nested `target/` directories (optional)
+**/target/
