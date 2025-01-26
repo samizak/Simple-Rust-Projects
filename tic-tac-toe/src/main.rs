@@ -18,17 +18,25 @@ fn main() {
     let mut board: Board = generate_board();
 
     loop {
-        print_board(&mut board);
+        print_board(&board);
 
         let user_choice = get_user_choice(&mut possible_choices);
-        println!("You chose: {}", user_choice);
-
         update_board(user_char, user_choice, &mut board);
 
-        let ai_number: u32 = get_computer_choice(&mut possible_choices);
-        println!("Computer chose: {ai_number}");
+        if check_win(user_char, &board) {
+            print_board(&board);
+            println!("Congratulations! You won!");
+            break;
+        }
 
+        let ai_number: u32 = get_computer_choice(&mut possible_choices);
         update_board(computer_char, ai_number, &mut board);
+
+        if check_win(computer_char, &board) {
+            print_board(&board);
+            println!("Computer wins!");
+            break;
+        }
     }
 }
 
@@ -107,7 +115,7 @@ fn update_board(character: char, position: u32, board: &mut Board) {
     board[row][col] = character;
 }
 
-fn print_board(board: &mut Board) {
+fn print_board(board: &Board) {
     println!("\nCurrent Board:");
 
     for (i, row) in board.iter().enumerate() {
@@ -123,4 +131,19 @@ fn print_board(board: &mut Board) {
             println!("{}", ["-----"; BOARD_SIZE].join("+"));
         }
     }
+}
+
+fn check_win(player: char, board: &Board) -> bool {
+    // Check rows and columns
+    for i in 0..BOARD_SIZE {
+        if board[i].iter().all(|&c| c == player) || (0..BOARD_SIZE).all(|j| board[j][i] == player) {
+            return true;
+        }
+    }
+
+    // Check diagonals
+    let diag1 = (0..BOARD_SIZE).all(|i| board[i][i] == player);
+    let diag2 = (0..BOARD_SIZE).all(|i| board[i][BOARD_SIZE - 1 - i] == player);
+
+    diag1 || diag2
 }
