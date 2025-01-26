@@ -1,8 +1,7 @@
 use rand::Rng;
-use std::io;
+use std::{array, io};
 
 fn main() {
-    let mut board: [[char; 3]; 3] = [[' '; 3]; 3]; // 3x3 grid
     let available_characters = ['x', 'o'];
 
     println!("Welcome to tic-tac-toe!");
@@ -16,16 +15,10 @@ fn main() {
     // Get user and computer character choices
     let (user_char, computer_char) = get_user_and_computer_character_choices(available_characters);
 
-    println!("\n");
-
     // Generate board options
-    let mut counter: u32 = 1;
-    for row in board.iter_mut() {
-        for cell in row.iter_mut() {
-            *cell = char::from_digit(counter, 10).expect("Failed to create board");
-            counter += 1;
-        }
-    }
+    let mut board = generate_board();
+
+    println!("\n");
 
     loop {
         for row in board.iter() {
@@ -36,9 +29,6 @@ fn main() {
                 .join(" | ");
             println!(" {display_row}\n-----------");
         }
-
-        // println!("{:?}", board);
-        // println!("You go first!");
 
         let mut user_number = 0;
 
@@ -125,4 +115,13 @@ fn get_user_and_computer_character_choices(available_characters: [char; 2]) -> (
             user_char, available_characters[0], available_characters[1]
         );
     }
+}
+
+fn generate_board() -> [[char; 3]; 3] {
+    array::from_fn(|row| {
+        array::from_fn(|col| {
+            let num = row * 3 + col + 1;
+            char::from_digit(num as u32, 10).unwrap()
+        })
+    })
 }
