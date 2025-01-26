@@ -16,7 +16,7 @@ fn main() {
     let (user_char, computer_char) = get_user_and_computer_character_choices(available_characters);
 
     // Generate board options
-    let mut board = generate_board();
+    let mut board: [[char; 3]; 3] = generate_board();
     println!("\n");
 
     loop {
@@ -29,17 +29,14 @@ fn main() {
             println!(" {display_row}\n-----------");
         }
 
-        // Get the user number
+        // Get the user number choice
         let user_number = get_user_number_choice(&mut possible_choices);
         println!("You chose: {}", user_number);
 
-        let index = user_number - 1;
-        let row = (index / 3) as usize;
-        let col = (index % 3) as usize;
-        board[row][col] = user_char;
+        // Update board with player's
+        update_board(user_char, user_number, &mut board);
 
         let mut ai_number = rand::thread_rng().gen_range(1..=9);
-
         loop {
             if possible_choices.contains(&ai_number) {
                 break;
@@ -50,12 +47,8 @@ fn main() {
 
         println!("Computer chose: {ai_number}");
 
-        let index = ai_number - 1;
-        let row = (index / 3) as usize;
-        let col = (index % 3) as usize;
-        board[row][col] = computer_char;
-
-        println!("{:?}", possible_choices);
+        // Update board with computer's
+        update_board(computer_char, ai_number, &mut board);
     }
 }
 
@@ -122,4 +115,13 @@ fn get_user_number_choice(possible_choices: &mut Vec<u32>) -> u32 {
             Err(_) => println!("'{user_choice}' is not a valid number!"),
         }
     }
+}
+
+fn update_board(char_to_use: char, board_index: u32, board: &mut [[char; 3]; 3]) {
+    let index = board_index - 1;
+    let row = (index / 3) as usize;
+    let col = (index % 3) as usize;
+    board[row][col] = char_to_use;
+
+    // println!("{:?}", possible_choices);
 }
