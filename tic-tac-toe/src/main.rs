@@ -17,7 +17,6 @@ fn main() {
 
     // Generate board options
     let mut board = generate_board();
-
     println!("\n");
 
     loop {
@@ -30,32 +29,8 @@ fn main() {
             println!(" {display_row}\n-----------");
         }
 
-        let mut user_number = 0;
-
-        loop {
-            println!("Choose a number between 1-9");
-            let mut user_choice = String::new();
-
-            io::stdin()
-                .read_line(&mut user_choice)
-                .expect("Failed to read");
-
-            match user_choice.trim().parse::<u32>() {
-                Ok(num) => {
-                    if possible_choices.contains(&num) {
-                        user_number = num;
-                        possible_choices.retain(|&x| x != num);
-                        break;
-                    } else {
-                        println!("Enter a valid number between 1 and 9!");
-                    }
-                }
-                Err(_) => {
-                    println!("'{user_choice}' is not a valid number!");
-                }
-            }
-        }
-
+        // Get the user number
+        let user_number = get_user_number_choice(&mut possible_choices);
         println!("You chose: {}", user_number);
 
         let index = user_number - 1;
@@ -124,4 +99,27 @@ fn generate_board() -> [[char; 3]; 3] {
             char::from_digit(num as u32, 10).unwrap()
         })
     })
+}
+
+fn get_user_number_choice(possible_choices: &mut Vec<u32>) -> u32 {
+    loop {
+        println!("Choose a number between 1-9");
+        let mut user_choice = String::new();
+
+        io::stdin()
+            .read_line(&mut user_choice)
+            .expect("Failed to read");
+
+        match user_choice.trim().parse::<u32>() {
+            Ok(num) => {
+                if possible_choices.contains(&num) {
+                    possible_choices.retain(|&x| x != num);
+                    return num;
+                } else {
+                    println!("Enter a valid number between 1 and 9 that wasn't already used!");
+                }
+            }
+            Err(_) => println!("'{user_choice}' is not a valid number!"),
+        }
+    }
 }
