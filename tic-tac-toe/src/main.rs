@@ -104,7 +104,7 @@ fn get_user_choice(possible_choices: &mut Vec<u32>) -> u32 {
 }
 
 fn get_computer_choice(possible_choices: &mut Vec<u32>) -> u32 {
-    let index = rand::thread_rng().gen_range(1..possible_choices.len());
+    let index = rand::thread_rng().gen_range(0..possible_choices.len());
     return possible_choices.swap_remove(index);
 }
 
