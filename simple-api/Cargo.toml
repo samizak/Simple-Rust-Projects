@@ -1,0 +1,8 @@
+[package]
+name = "simple-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.5.1"  # Latest at time of writing
+actix-rt = "2.9.0"   # Add runtime dependency
