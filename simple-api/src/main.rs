@@ -3,7 +3,7 @@ use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 // Define a handler function for GET requests
 #[get("/")]
 async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello, this is a GET request response!")
+    HttpResponse::Ok().body("Hello World!")
 }
 
 #[get("/api")]
