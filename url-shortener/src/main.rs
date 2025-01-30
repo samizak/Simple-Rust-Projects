@@ -1,12 +1,12 @@
 use actix_web::{
     get, post,
-    web::{self, Json, Path, Query, Redirect},
+    web::{self, Path, Query},
     App, HttpResponse, HttpServer, Responder,
 };
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sqlx::{sqlite::SqlitePoolOptions, Pool, Row, Sqlite}; // Import the `Row` trait
+use sqlx::{sqlite::SqlitePoolOptions, Pool, Row, Sqlite};
 
 #[derive(Deserialize)]
 struct QueryParams {
@@ -20,14 +20,12 @@ struct ShortenedUrl {
     shortened_url: String,
 }
 
-// Struct to represent a single row in the `urls` table
 #[derive(Serialize)]
 struct UrlEntry {
     id: String,
     original_url: String,
 }
 
-// GET handler for the root path
 #[get("/")]
 async fn main_path() -> impl Responder {
     HttpResponse::Ok().body("Hello World!")
@@ -46,7 +44,6 @@ async fn redirect(short_id: Path<String>, db: web::Data<Pool<Sqlite>>) -> impl R
     match row {
         Ok(Some(row)) => {
             let original_url: String = row.get("original_url");
-            // Return JSON instead of redirect
             HttpResponse::Ok().json(json!({
                 "short_id": short_id,
                 "original_url": original_url,
@@ -71,7 +68,6 @@ async fn redirect(short_id: Path<String>, db: web::Data<Pool<Sqlite>>) -> impl R
 async fn shorten_url(query: Query<QueryParams>, db: web::Data<Pool<Sqlite>>) -> impl Responder {
     let mut url = query.url.trim().to_string();
 
-    // Add http:// scheme if missing
     if !url.starts_with("http://") && !url.starts_with("https://") {
         url = format!("http://{}", url);
     }
@@ -93,16 +89,13 @@ async fn shorten_url(query: Query<QueryParams>, db: web::Data<Pool<Sqlite>>) -> 
     })
 }
 
-// GET handler to retrieve all URLs from the database
 #[get("/get-urls")]
 async fn get_urls(db: web::Data<Pool<Sqlite>>) -> impl Responder {
-    // Fetch all rows from the `urls` table
     let rows = sqlx::query("SELECT id, original_url FROM urls")
         .fetch_all(db.get_ref())
         .await
         .expect("Failed to query database");
 
-    // Convert rows into a vector of `UrlEntry` structs
     let urls: Vec<UrlEntry> = rows
         .into_iter()
         .map(|row| UrlEntry {
@@ -111,28 +104,23 @@ async fn get_urls(db: web::Data<Pool<Sqlite>>) -> impl Responder {
         })
         .collect();
 
-    // Return the URLs as a JSON response
     HttpResponse::Ok().json(urls)
 }
 
-// Helper function to generate a random shortened ID
 fn generate_shortened_id(length: usize) -> String {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     (0..length)
-        .map(|_| rng.gen_range(b'a'..=b'z') as char) // Generate random lowercase letters
+        .map(|_| rng.random_range(b'a'..=b'z') as char) // Generate random lowercase letters
         .collect()
 }
 
-// Main function to start the server
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Connect to the SQLite database
     let db = SqlitePoolOptions::new()
         .connect("sqlite:urls.db")
         .await
         .expect("Failed to connect to SQLite database");
 
-    // Create the `urls` table if it doesn't exist
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS urls (
             id TEXT PRIMARY KEY,
@@ -143,14 +131,13 @@ async fn main() -> std::io::Result<()> {
     .await
     .expect("Failed to create table");
 
-    // Start the Actix Web server
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(db.clone())) // Share the database connection pool
-            .service(main_path) // Root path
-            .service(shorten_url) // Shorten URL endpoint
-            .service(get_urls) // Get all URLs endpoint (specific route)
-            .service(redirect) // Redirect endpoint (wildcard route)
+            .app_data(web::Data::new(db.clone()))
+            .service(main_path)
+            .service(shorten_url)
+            .service(get_urls)
+            .service(redirect)
     })
     .bind("127.0.0.1:8080")?
     .run()
