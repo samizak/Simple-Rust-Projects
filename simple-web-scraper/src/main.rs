@@ -16,8 +16,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let body = response.text().await?;
     let document = Html::parse_document(&body);
 
-    let ticker_selector = Selector::parse("h1.yf-xxbei9").unwrap();
-    let price_selector = Selector::parse(r#"fin-streamer[data-testid="qsp-price"]"#).unwrap();
+    let ticker_selector = Selector::parse("h1.yf-xxbei9").unwrap(); // Selector for the ticker name
+    let price_selector = Selector::parse(r#"fin-streamer[data-testid="qsp-price"]"#).unwrap(); // Selector for the price
 
     if let Some(element) = document.select(&ticker_selector).next() {
         ticker_name = element.text().collect::<Vec<_>>().join("");
