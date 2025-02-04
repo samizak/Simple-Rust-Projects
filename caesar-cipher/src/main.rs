@@ -1,40 +1,25 @@
+pub fn caesar_cipher(text: &str, shift: i32) -> String {
+    text.chars()
+        .map(|c| {
+            if c.is_ascii_alphabetic() {
+                let base = if c.is_ascii_lowercase() { b'a' } else { b'A' } as i32;
+                let offset = (c as i32 - base + shift).rem_euclid(26);
+                (base + offset) as u8 as char
+            } else {
+                c
+            }
+        })
+        .collect()
+}
+
 fn main() {
-    let shift: usize = 5;
-    let string_to_encrypt = "hello world!";
-    let string_vec: Vec<char> = string_to_encrypt.to_uppercase().chars().collect();
+    let text = "Hello, World!";
+    let shift = 3;
 
-    let possible_chars: Vec<char> = ('A'..='Z').into_iter().collect::<Vec<char>>();
+    let encrypted = caesar_cipher(text, shift);
+    let decrypted = caesar_cipher(&encrypted, -shift);
 
-    let encrypted: Vec<char> = string_vec
-        .iter()
-        .map(|c| {
-            if possible_chars.contains(c) {
-                let index = (*c as u8 - b'A') as usize;
-                let shifted_index = (index + shift) % 26;
-                return (shifted_index as u8 + b'A') as char;
-            } else {
-                return *c;
-            }
-        })
-        .collect();
-
-    let decrypted: Vec<char> = encrypted
-        .iter()
-        .map(|c| {
-            if possible_chars.contains(c) {
-                let index = (*c as u8 - b'A') as usize;
-                let shifted_index = (index + 26 - shift) % 26;
-                return (shifted_index as u8 + b'A') as char;
-            } else {
-                return *c;
-            }
-        })
-        .collect();
-
-    let encrypted_str: String = encrypted.iter().collect();
-    let decrypted_str: String = decrypted.iter().collect();
-
-    println!("Before: {}", string_to_encrypt);
-    println!("Encrypted: {}", encrypted_str);
-    println!("Decrypted: {}", decrypted_str);
+    println!("Original:  {}", text);
+    println!("Encrypted: {}", encrypted);
+    println!("Decrypted: {}", decrypted);
 }
